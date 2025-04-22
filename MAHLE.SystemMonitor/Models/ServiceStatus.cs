@@ -1,10 +1,13 @@
-namespace MAHLE.SystemMonitor.Models;
+using System;
 
-public class ServiceStatus
+namespace MAHLE.SystemMonitor.Models
 {
-    public int Id { get; set; }
-    public string MachineName { get; set; } = null!;
-    public string ServiceName { get; set; } = null!;
-    public bool IsRunning { get; set; }
-    public DateTime CheckedAt { get; set; }
+    public class ServiceStatus
+    {
+        public int Id { get; set; }
+        public string MachineName { get; set; } = null!;
+        public string ServiceName { get; set; } = null!;
+        public bool IsRunning { get; set; }
+        public DateTime CheckedAt { get; set; }
+    }
 }

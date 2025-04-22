@@ -1,30 +1,44 @@
+using System;
 using MAHLE.SystemMonitor;
 using MAHLE.SystemMonitor.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
-var builder = Host.CreateApplicationBuilder(args);
-
-// Add database context
-var dbProvider = builder.Configuration.GetValue<string>("MonitoringSettings:DatabaseProvider");
-var connectionString = builder.Configuration.GetConnectionString(dbProvider);
-
-builder.Services.AddDbContext<MonitoringDbContext>(options =>
+namespace MAHLE.SystemMonitor
 {
-    if (dbProvider == "PostgreSQL")
+    public class Program
     {
-        options.UseNpgsql(connectionString);
-    }
-    else if (dbProvider == "SQLServer")
-    {
-        options.UseSqlServer(connectionString);
-    }
-    else
-    {
-        throw new ArgumentException($"Unsupported database provider: {dbProvider}");
-    }
-});
+        public static void Main(string[] args)
+        {
+            CreateHostBuilder(args).Build().Run();
+        }
 
-builder.Services.AddHostedService<Worker>();
+        public static IHostBuilder CreateHostBuilder(string[] args) =>
+            Host.CreateDefaultBuilder(args)
+                .ConfigureServices((hostContext, services) =>
+                {
+                    // Add database context
+                    var dbProvider = hostContext.Configuration["MonitoringSettings:DatabaseProvider"];
+                    var connectionString = hostContext.Configuration.GetConnectionString(dbProvider);
 
-var host = builder.Build();
-host.Run();
+                    if (dbProvider == "PostgreSQL")
+                    {
+                        services.AddDbContext<MonitoringDbContext>(options =>
+                            options.UseNpgsql(connectionString));
+                    }
+                    else if (dbProvider == "SQLServer")
+                    {
+                        services.AddDbContext<MonitoringDbContext>(options =>
+                            options.UseSqlServer(connectionString));
+                    }
+                    else
+                    {
+                        throw new ArgumentException($"Unsupported database provider: {dbProvider}");
+                    }
+
+                    services.AddHostedService<Worker>();
+                });
+    }
+}
